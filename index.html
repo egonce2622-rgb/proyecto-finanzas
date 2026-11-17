@@ -2,12 +2,12 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FX Risk Copilot</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
+        * { font-family: 'Inter', sans-serif; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         .sidebar-item { transition: all 0.2s ease; cursor: pointer; }
         .sidebar-item:hover { background-color: #1e3a5f; }
         .sidebar-item.active { background-color: #193558; color: #ffffff; }
@@ -26,9 +26,46 @@
         .chart-green-line { stroke: #10B981; stroke-width: 3; }
         #app { display: none; }
         #app.visible { display: flex; }
-        
-        /* Animación suave para el sidebar en móvil */
         #sidebar { transition: transform 0.3s ease-in-out; }
+
+        /* ===== ESTILOS DEL DASHBOARD BLANCO (Responsivos) ===== */
+        .dashboard { max-width: 1100px; margin: 0 auto 28px; width: 100%; }
+        .dashboard .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+        .dashboard .header h1 { font-size: 22px; color: #263445; }
+        .dashboard .header p { color: #778394; font-size: 13px; margin-top: 5px; }
+        .dashboard .company { background: white; padding: 10px 15px; border: 1px solid #e0e5eb; border-radius: 9px; font-size: 12px; font-weight: bold; color: #263445; white-space: nowrap; }
+        .dashboard .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 18px; }
+        .dashboard .card { background: white; border: 1px solid #e5e9ef; border-radius: 12px; padding: 17px; box-shadow: 0 2px 6px rgba(0,0,0,.03); }
+        .dashboard .card h3 { font-size: 12px; color: #657386; margin-bottom: 10px; font-weight: 600; }
+        .dashboard .value { font-size: 24px; font-weight: bold; color: #263445; }
+        .dashboard .green { color: #168849; }
+        .dashboard .red { color: #bd343b; }
+        .dashboard .unit { font-size: 12px; color: #596579; font-weight: bold; }
+        .dashboard .trend { font-size: 12px; margin-top: 7px; color: #159653; }
+        .dashboard .content { display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; }
+        .dashboard .panel { background: white; border: 1px solid #e3e8ee; border-radius: 12px; padding: 18px; box-shadow: 0 2px 6px rgba(0,0,0,.03); }
+        .dashboard .panel h2 { font-size: 16px; margin-bottom: 18px; color: #273548; }
+        .dashboard .chart { width: 100%; height: 190px; }
+        .dashboard .chart svg { width: 100%; height: 100%; overflow: visible; }
+        .dashboard .axis { font-size: 11px; fill: #667386; }
+        .dashboard .grid-line { stroke: #e8edf2; stroke-width: 1; stroke-dasharray: 3 3; }
+        .dashboard .chart-line { fill: none; stroke: #159e6a; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+        .dashboard .chart-area { fill: url(#gradient); }
+        .dashboard .dot { fill: #159e6a; stroke: white; stroke-width: 2; }
+        .dashboard .invoice { display: flex; justify-content: space-between; align-items: center; padding: 13px 0; border-bottom: 1px solid #edf0f4; gap: 8px; }
+        .dashboard .invoice:last-child { border-bottom: none; }
+        .dashboard .invoice-info { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #263445; min-width: 0; }
+        .dashboard .document { font-size: 19px; flex-shrink: 0; }
+        .dashboard .invoice-value { font-size: 12px; font-weight: bold; white-space: nowrap; color: #263445; }
+        .dashboard .days { background: #d9f5e4; color: #168849; padding: 5px 8px; border-radius: 15px; font-size: 11px; white-space: nowrap; }
+        
+        /* Ajustes específicos para móviles pequeños */
+        @media (max-width: 600px) {
+            .dashboard .header { flex-direction: column; align-items: flex-start; }
+            .dashboard .value { font-size: 20px; }
+            .dashboard .card { padding: 14px; }
+            .dashboard .content { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body class="bg-[#F1F5F9] h-screen overflow-hidden">
@@ -44,7 +81,6 @@
                 <p class="text-sm text-[#64748B] mt-1">Member Login</p>
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-3"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             </div>
-
             <form id="loginForm" autocomplete="off">
                 <div class="mb-4 md:mb-5">
                     <label class="block text-sm font-semibold text-[#0F172A] mb-2">Usuario</label>
@@ -52,100 +88,91 @@
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8]">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                         </span>
-                        <input type="text" id="loginUser" placeholder="Username" class="w-full bg-[#F1F5F9] border border-gray-200 rounded-lg pl-11 pr-4 py-3 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B1E36]">
+                        <!-- text-base previene el zoom automático en iOS -->
+                        <input type="text" id="loginUser" placeholder="Username" class="w-full bg-[#F1F5F9] border border-gray-200 rounded-lg pl-11 pr-4 py-3 text-base text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B1E36]">
                     </div>
                 </div>
-
                 <div class="mb-4 md:mb-5">
                     <label class="block text-sm font-semibold text-[#0F172A] mb-2">Contraseña</label>
                     <div class="relative">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8]">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                         </span>
-                        <input type="password" id="loginPass" placeholder="Password" class="w-full bg-[#F1F5F9] border border-gray-200 rounded-lg pl-11 pr-4 py-3 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B1E36]">
+                        <input type="password" id="loginPass" placeholder="Password" class="w-full bg-[#F1F5F9] border border-gray-200 rounded-lg pl-11 pr-4 py-3 text-base text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B1E36]">
                     </div>
                 </div>
-
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center justify-between mb-6 gap-3">
                     <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                        <input type="checkbox" checked class="w-4 h-4 accent-blue-600">
+                        <input type="checkbox" checked class="w-4 h-4 accent-blue-600 flex-shrink-0">
                         <span class="hidden sm:inline">Remember me</span>
                     </label>
-                    <a href="#" class="text-sm text-[#10B981] font-medium hover:underline">Forgot password?</a>
+                    <a href="#" class="text-sm text-[#10B981] font-medium hover:underline text-right">¿Olvidaste la contraseña?</a>
                 </div>
-
-                <button type="submit" class="w-full bg-[#0B1E36] text-white font-bold py-3 md:py-4 rounded-lg text-base hover:bg-[#0F172A] transition">
-                    LOGIN
-                </button>
+                <button type="submit" class="w-full bg-[#0B1E36] text-white font-bold py-3.5 md:py-4 rounded-lg text-base hover:bg-[#0F172A] transition active:scale-[0.98]">LOGIN</button>
             </form>
-
             <p class="text-center text-xs text-[#64748B] mt-6">Sistema de gestión de riesgo cambiario</p>
         </div>
     </div>
 
     <!-- ==================== APLICACIÓN ==================== -->
     <div id="app" class="h-full w-full">
-        
-        <!-- Botón de menú hamburguesa (solo móvil) -->
-        <button id="menuBtn" class="md:hidden fixed top-4 left-4 z-50 bg-[#0B1E36] text-white p-2.5 rounded-lg shadow-lg">
+        <button id="menuBtn" class="md:hidden fixed top-4 left-4 z-50 bg-[#0B1E36] text-white p-2.5 rounded-lg shadow-lg active:scale-95 transition-transform">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
-
-        <!-- Overlay oscuro para móvil -->
-        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden"></div>
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden backdrop-blur-sm"></div>
 
         <div class="flex h-full w-full">
             <!-- Sidebar -->
-            <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-[250px] min-w-[250px] bg-[#0B1E36] text-white flex flex-col h-full overflow-y-auto transform -translate-x-full md:translate-x-0 shadow-2xl md:shadow-none">
+            <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-[260px] min-w-[260px] bg-[#0B1E36] text-white flex flex-col h-full overflow-y-auto transform -translate-x-full md:translate-x-0 shadow-2xl md:shadow-none">
                 <div class="p-5 border-b border-[#193558] flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 bg-emerald-500 rounded-lg flex items-center justify-center">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-9 h-9 bg-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
                         </div>
-                        <span class="font-bold text-lg">FX Risk Copilot</span>
+                        <span class="font-bold text-lg truncate">FX Risk Copilot</span>
                     </div>
-                    <button id="closeSidebar" class="md:hidden text-gray-400 hover:text-white">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    <button id="closeSidebar" class="md:hidden text-gray-400 hover:text-white p-1 active:scale-95 transition-transform flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
                 </div>
                 <nav class="flex-1 py-3">
-                    <div class="sidebar-item active flex items-center gap-3 px-5 py-3" data-view="view1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    <div class="sidebar-item active flex items-center gap-3 px-5 py-3.5" data-view="view1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                         <span class="text-sm font-medium">Resumen general</span>
                     </div>
-                    <div class="sidebar-item flex items-center gap-3 px-5 py-3" data-view="view2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-5"></path><path d="M9 8V2"></path><path d="M15 8V2"></path><path d="M18 8v7a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8"></path></svg>
+                    <div class="sidebar-item flex items-center gap-3 px-5 py-3.5" data-view="view2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M12 22v-5"></path><path d="M9 8V2"></path><path d="M15 8V2"></path><path d="M18 8v7a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8"></path></svg>
                         <span class="text-sm font-medium">Conexiones SAT / ERP</span>
                     </div>
-                    <div class="sidebar-item flex items-center gap-3 px-5 py-3" data-view="view3">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                    <div class="sidebar-item flex items-center gap-3 px-5 py-3.5" data-view="view3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
                         <span class="text-sm font-medium">Facturas y operaciones</span>
                     </div>
-                    <div class="sidebar-item flex items-center gap-3 px-5 py-3" data-view="view4">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path></svg>
+                    <div class="sidebar-item flex items-center gap-3 px-5 py-3.5" data-view="view4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path></svg>
                         <span class="text-sm font-medium">Exposición neta</span>
                     </div>
-                    <div class="sidebar-item flex items-center gap-3 px-5 py-3" data-view="view5">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path><path d="m9 12 2 2 4-4"></path></svg>
+                    <div class="sidebar-item flex items-center gap-3 px-5 py-3.5" data-view="view5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path><path d="m9 12 2 2 4-4"></path></svg>
                         <span class="text-sm font-medium">Margen en riesgo</span>
                     </div>
-                    <div class="sidebar-item flex items-center gap-3 px-5 py-3" data-view="view6">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+                    <div class="sidebar-item flex items-center gap-3 px-5 py-3.5" data-view="view6">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
                         <span class="text-sm font-medium">Alertas inteligentes</span>
                     </div>
-                    <div class="sidebar-item flex items-center gap-3 px-5 py-3" data-view="view7">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path></svg>
+                    <div class="sidebar-item flex items-center gap-3 px-5 py-3.5" data-view="view7">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path></svg>
                         <span class="text-sm font-medium">Coberturas financieras</span>
                     </div>
-                    <div class="sidebar-item flex items-center gap-3 px-5 py-3" data-view="view8">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"></path><rect width="16" height="12" x="4" y="8" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M15 13v2"></path><path d="M9 13v2"></path></svg>
+                    <div class="sidebar-item flex items-center gap-3 px-5 py-3.5" data-view="view8">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M12 8V4H8"></path><rect width="16" height="12" x="4" y="8" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M15 13v2"></path><path d="M9 13v2"></path></svg>
                         <span class="text-sm font-medium">Asistente IA</span>
                     </div>
                 </nav>
                 <div class="p-4 border-t border-[#193558]">
                     <div class="flex items-center gap-2 text-xs text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path></svg>
-                        <span>Asistente IA</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path></svg>
+                        <span>Asistente IA v2.4</span>
                     </div>
                 </div>
             </aside>
@@ -155,16 +182,18 @@
 
                 <!-- Vista 1: Resumen general -->
                 <div id="view1" class="view active">
+
+                    <!-- ===== HEADER OSCURO (ARRIBA) ===== -->
                     <div class="bg-[#0F172A] rounded-xl px-4 md:px-6 py-4 mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                         <div class="flex items-center gap-2">
                             <span class="text-emerald-400 font-extrabold text-xl italic">FX</span>
                             <span class="text-white font-semibold text-lg">FX Risk Copilot</span>
                         </div>
                         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full md:w-auto">
-                            <div class="flex items-center gap-2 bg-[#1e293b] px-4 py-1.5 rounded-full w-full sm:w-auto justify-between sm:justify-start">
+                            <div class="flex items-center gap-2 bg-[#1e293b] px-4 py-2 rounded-full w-full sm:w-auto justify-between sm:justify-start">
                                 <span class="text-sm text-gray-300">Conexión SAT / CONTPAQi:</span>
                                 <span class="text-sm text-emerald-400 font-medium">Activa</span>
-                                <span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                                <span class="w-2 h-2 bg-emerald-400 rounded-full flex-shrink-0"></span>
                             </div>
                             <div class="text-sm flex items-center gap-2">
                                 <span class="text-gray-400">USD/MXN: </span>
@@ -174,46 +203,145 @@
                         </div>
                     </div>
 
+                    <!-- ===== DASHBOARD BLANCO (DEBAJO DEL HEADER) ===== -->
+                    <div class="dashboard">
+                        <header class="header">
+                            <div>
+                                <h1>Resumen general</h1>
+                                <p>Monitorea la salud cambiaria de tu empresa.</p>
+                            </div>
+                            <div class="company">Importadora MX, S.A. de C.V. ▼</div>
+                        </header>
+
+                        <section class="cards">
+                            <div class="card">
+                                <h3>Tipo de cambio USD/MXN</h3>
+                                <div class="value green">$18.50</div>
+                                <div class="trend">▼ Estable</div>
+                            </div>
+                            <div class="card">
+                                <h3>Cuentas por cobrar</h3>
+                                <div class="value green">+ $8,000</div>
+                                <div class="unit">USD</div>
+                            </div>
+                            <div class="card">
+                                <h3>Cuentas por pagar</h3>
+                                <div class="value red">- $20,000</div>
+                                <div class="unit">USD</div>
+                            </div>
+                            <div class="card">
+                                <h3>Exposición neta</h3>
+                                <div class="value red">$12,000</div>
+                                <div class="unit">USD · Por pagar</div>
+                            </div>
+                        </section>
+
+                        <section class="content">
+                            <div class="panel">
+                                <h2>Comportamiento del USD/MXN</h2>
+                                <div class="chart">
+                                    <svg viewBox="0 0 500 210" preserveAspectRatio="none" class="w-full h-full">
+                                        <defs>
+                                            <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stop-color="#39c58b" stop-opacity=".30"/>
+                                                <stop offset="100%" stop-color="#39c58b" stop-opacity="0"/>
+                                            </linearGradient>
+                                        </defs>
+                                        <line x1="45" y1="25" x2="490" y2="25" class="grid-line"/>
+                                        <line x1="45" y1="65" x2="490" y2="65" class="grid-line"/>
+                                        <line x1="45" y1="105" x2="490" y2="105" class="grid-line"/>
+                                        <line x1="45" y1="145" x2="490" y2="145" class="grid-line"/>
+                                        <line x1="45" y1="180" x2="490" y2="180" class="grid-line"/>
+                                        <text x="3" y="29" class="axis">19.00</text>
+                                        <text x="3" y="69" class="axis">18.75</text>
+                                        <text x="3" y="109" class="axis">18.50</text>
+                                        <text x="3" y="149" class="axis">18.25</text>
+                                        <text x="3" y="184" class="axis">18.00</text>
+                                        <path class="chart-area" d="M50 150 L110 105 L170 115 L230 85 L290 55 L350 65 L410 35 L475 10 L475 180 L50 180 Z"/>
+                                        <path class="chart-line" d="M50 150 L110 105 L170 115 L230 85 L290 55 L350 65 L410 35 L475 10"/>
+                                        <circle cx="50" cy="150" r="4" class="dot"/>
+                                        <circle cx="110" cy="105" r="4" class="dot"/>
+                                        <circle cx="170" cy="115" r="4" class="dot"/>
+                                        <circle cx="230" cy="85" r="4" class="dot"/>
+                                        <circle cx="290" cy="55" r="4" class="dot"/>
+                                        <circle cx="350" cy="65" r="4" class="dot"/>
+                                        <circle cx="410" cy="35" r="4" class="dot"/>
+                                        <circle cx="475" cy="10" r="4" class="dot"/>
+                                        <text x="42" y="205" class="axis">Lun</text>
+                                        <text x="103" y="205" class="axis">Mar</text>
+                                        <text x="163" y="205" class="axis">Mié</text>
+                                        <text x="223" y="205" class="axis">Jue</text>
+                                        <text x="283" y="205" class="axis">Vie</text>
+                                        <text x="343" y="205" class="axis">Sáb</text>
+                                        <text x="420" y="205" class="axis">Dom</text>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <div class="panel">
+                                <h2>Próximos vencimientos</h2>
+                                <div class="invoice">
+                                    <div class="invoice-info">
+                                        <span class="document">📄</span>
+                                        <span class="truncate">Factura C-001</span>
+                                    </div>
+                                    <div class="invoice-value">$12,000 USD</div>
+                                    <span class="days">15 días</span>
+                                </div>
+                                <div class="invoice">
+                                    <div class="invoice-info">
+                                        <span class="document">📄</span>
+                                        <span class="truncate">Factura C-002</span>
+                                    </div>
+                                    <div class="invoice-value">$8,000 USD</div>
+                                    <span class="days">30 días</span>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- ===== KPIs DE EXPOSICIÓN ===== -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-6">
-                        <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-100 flex items-center justify-between">
-                            <div>
+                        <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-100 flex items-center justify-between gap-3">
+                            <div class="min-w-0">
                                 <p class="text-sm text-gray-600 mb-1">Exposición Neta USD:</p>
-                                <p class="text-xl md:text-2xl font-bold text-[#0F172A]">$42,500</p>
+                                <p class="text-xl md:text-2xl font-bold text-[#0F172A] truncate">$42,500</p>
                             </div>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
                         </div>
-                        <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-100 flex items-center justify-between">
-                            <div>
+                        <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-100 flex items-center justify-between gap-3">
+                            <div class="min-w-0">
                                 <p class="text-sm text-gray-600 mb-1">Margen en Riesgo (30d):</p>
-                                <p class="text-xl md:text-2xl font-bold text-[#DC2626]">-$45,000 <span class="text-sm">(-14%)</span></p>
+                                <p class="text-xl md:text-2xl font-bold text-[#DC2626] truncate">-$45,000 <span class="text-sm">(-14%)</span></p>
                             </div>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
                         </div>
-                        <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-100 flex items-center justify-between">
-                            <div>
+                        <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-100 flex items-center justify-between gap-3">
+                            <div class="min-w-0">
                                 <p class="text-sm text-gray-600 mb-1">Cobertura Activa:</p>
                                 <p class="text-xl md:text-2xl font-bold text-[#0F172A]">35%</p>
                             </div>
-                            <div class="relative w-12 h-12 md:w-14 md:h-14">
+                            <div class="relative w-12 h-12 md:w-14 md:h-14 flex-shrink-0">
                                 <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                                     <path class="text-gray-100" stroke-width="4" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
                                     <path class="text-emerald-500" stroke-width="4" stroke-linecap="round" stroke="currentColor" fill="none" stroke-dasharray="35, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
                                 </svg>
                             </div>
                         </div>
-                        <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-100 flex items-center justify-between">
-                            <div>
+                        <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-100 flex items-center justify-between gap-3">
+                            <div class="min-w-0">
                                 <p class="text-sm text-gray-600 mb-1">Ahorro Protegido:</p>
-                                <p class="text-xl md:text-2xl font-bold text-emerald-600">$18,200</p>
+                                <p class="text-xl md:text-2xl font-bold text-emerald-600 truncate">$18,200</p>
                             </div>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
                         </div>
                     </div>
 
+                    <!-- ===== SIMULADOR + ALERTA ===== -->
                     <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-5 mb-6">
                         <div class="lg:col-span-3 bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-100">
                             <h3 class="text-base font-bold text-[#0F172A] mb-4">Simulador de Impacto en Utilidad Neta</h3>
-                            <div class="overflow-x-auto">
+                            <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0 pb-2">
                                 <svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg" class="w-full min-w-[500px] h-auto">
                                     <defs>
                                         <linearGradient id="redArea" x1="0" y1="0" x2="0" y2="1">
@@ -262,19 +390,20 @@
                         </div>
                         <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden">
                             <div class="bg-red-50 px-4 md:px-5 py-3 border-b border-red-100 flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
                                 <h3 class="font-semibold text-[#7f1d1d] text-sm md:text-base">Alerta de Cobertura Sugerida</h3>
                             </div>
                             <div class="p-4 md:p-5">
                                 <p class="text-sm text-gray-800 mb-1">Factura CFDI #402 ($15,000 USD) vence en 12 días.</p>
                                 <p class="text-sm text-gray-700 mb-5">Si el dólar llega a $21.50, perderás <span class="font-semibold text-red-600">$45,000 MXN</span> de margen</p>
-                                <button class="w-full bg-[#0F172A] text-white py-3 rounded-lg text-sm font-semibold hover:bg-[#1e293b] transition">Proteger Factura por $1,850 MXN</button>
+                                <button class="w-full bg-[#0F172A] text-white py-3 rounded-lg text-base font-semibold hover:bg-[#1e293b] transition active:scale-[0.98]">Proteger Factura por $1,850 MXN</button>
                             </div>
                         </div>
                     </div>
 
+                    <!-- ===== TABLA DE FACTURAS ===== -->
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
                             <table class="w-full min-w-[600px]">
                                 <thead>
                                     <tr class="border-b border-gray-200 bg-gray-50">
@@ -289,35 +418,35 @@
                                 <tbody>
                                     <tr class="border-b border-gray-100 hover:bg-gray-50">
                                         <td class="px-4 md:px-6 py-3 md:py-4 text-sm font-medium text-gray-800">F1100801</td>
-                                        <td class="px-4 md:px-6 py-3 md:py-4 text-sm text-gray-700">Brabua Arendora...</td>
+                                        <td class="px-4 md:px-6 py-3 md:py-4 text-sm text-gray-700">Comercializadora S.A.</td>
                                         <td class="px-4 md:px-6 py-3 md:py-4 text-sm text-gray-800 font-medium">$1,500</td>
                                         <td class="px-4 md:px-6 py-3 md:py-4 text-sm text-gray-600">03/08/2024</td>
                                         <td class="px-4 md:px-6 py-3 md:py-4"><div class="w-7 h-7 bg-red-100 rounded-full flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></div></td>
-                                        <td class="px-4 md:px-6 py-3 md:py-4 text-right"><button class="border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition">Action</button></td>
+                                        <td class="px-4 md:px-6 py-3 md:py-4 text-right"><button class="border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition active:bg-gray-100">Action</button></td>
                                     </tr>
                                     <tr class="border-b border-gray-100 hover:bg-gray-50">
                                         <td class="px-4 md:px-6 py-3 md:py-4 text-sm font-medium text-gray-800">F1100882</td>
-                                        <td class="px-4 md:px-6 py-3 md:py-4 text-sm text-gray-700">MIZB Linier, Cont...</td>
+                                        <td class="px-4 md:px-6 py-3 md:py-4 text-sm text-gray-700">Distribuidora de Artículos S.A.</td>
                                         <td class="px-4 md:px-6 py-3 md:py-4 text-sm text-gray-800 font-medium">$3,000</td>
                                         <td class="px-4 md:px-6 py-3 md:py-4 text-sm text-gray-600">08/08/2024</td>
                                         <td class="px-4 md:px-6 py-3 md:py-4"><div class="w-7 h-7 bg-red-100 rounded-full flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></div></td>
-                                        <td class="px-4 md:px-6 py-3 md:py-4 text-right"><button class="border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition">Action</button></td>
+                                        <td class="px-4 md:px-6 py-3 md:py-4 text-right"><button class="border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition active:bg-gray-100">Action</button></td>
                                     </tr>
                                     <tr class="border-b border-gray-100 hover:bg-gray-50">
                                         <td class="px-4 md:px-6 py-3 md:py-4 text-sm font-medium text-gray-800">F1100893</td>
-                                        <td class="px-4 md:px-6 py-3 md:py-4 text-sm text-gray-700">Bóntra, Cleincan...</td>
+                                        <td class="px-4 md:px-6 py-3 md:py-4 text-sm text-gray-700">Combustibles del Norte S.A.</td>
                                         <td class="px-4 md:px-6 py-3 md:py-4 text-sm text-gray-800 font-medium">$4,000</td>
                                         <td class="px-4 md:px-6 py-3 md:py-4 text-sm text-gray-600">12/20/2023</td>
                                         <td class="px-4 md:px-6 py-3 md:py-4"><div class="w-7 h-7 bg-red-100 rounded-full flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></div></td>
-                                        <td class="px-4 md:px-6 py-3 md:py-4 text-right"><button class="border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition">Action</button></td>
+                                        <td class="px-4 md:px-6 py-3 md:py-4 text-right"><button class="border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition active:bg-gray-100">Action</button></td>
                                     </tr>
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-4 md:px-6 py-3 md:py-4 text-sm font-medium text-gray-800">F1100804</td>
-                                        <td class="px-4 md:px-6 py-3 md:py-4 text-sm text-gray-700">MI!B Quero Cara...</td>
+                                        <td class="px-4 md:px-6 py-3 md:py-4 text-sm text-gray-700">Procesos Industriales Inc.</td>
                                         <td class="px-4 md:px-6 py-3 md:py-4 text-sm text-gray-800 font-medium">$1,050</td>
                                         <td class="px-4 md:px-6 py-3 md:py-4 text-sm text-gray-600">05/16/2023</td>
                                         <td class="px-4 md:px-6 py-3 md:py-4"><div class="w-7 h-7 bg-red-100 rounded-full flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></div></td>
-                                        <td class="px-4 md:px-6 py-3 md:py-4 text-right"><button class="border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition">Action</button></td>
+                                        <td class="px-4 md:px-6 py-3 md:py-4 text-right"><button class="border border-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition active:bg-gray-100">Action</button></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -345,7 +474,7 @@
                                 <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"></rect><line x1="8" x2="16" y1="21" y2="21"></line><line x1="12" x2="12" y1="17" y2="21"></line></svg></div>
                                 <div><h3 class="font-semibold text-[#0F172A]">Sistema administrativo (ERP)</h3><p class="text-xs text-gray-500">Sincroniza tus operaciones contables.</p></div>
                             </div>
-                            <select class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"><option>CONTPAQi</option><option>SAP</option><option>Oracle</option></select>
+                            <select class="w-full border border-gray-200 rounded-lg px-3 py-3 text-base mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"><option>CONTPAQi</option><option>SAP</option><option>Oracle</option></select>
                             <div class="flex items-center gap-2 mb-4"><span class="bg-green-100 text-green-700 text-sm px-3 py-1.5 rounded-full font-medium flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Conectado</span></div>
                             <p class="text-xs text-gray-400">Última sincronización: Hoy, 10:26 a. m.</p>
                         </div>
@@ -356,17 +485,17 @@
                 <div id="view3" class="view">
                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                         <div><h1 class="text-xl md:text-2xl font-bold text-[#0F172A]">Facturas y operaciones</h1><p class="text-[#64748B] text-sm mt-1">Administra tus cuentas por cobrar y por pagar en moneda extranjera.</p></div>
-                        <button class="bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition flex items-center gap-2 w-full sm:w-auto justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg> Agregar factura</button>
+                        <button class="bg-blue-600 text-white px-4 py-3 rounded-lg text-base font-medium hover:bg-blue-700 transition flex items-center gap-2 w-full sm:w-auto justify-center active:scale-[0.98]"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg> Agregar factura</button>
                     </div>
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
                             <table class="w-full min-w-[600px]">
                                 <thead><tr class="border-b border-gray-100"><th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 md:px-6 py-4">Factura</th><th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 md:px-6 py-4">Operación</th><th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 md:px-6 py-4">Importe (USD)</th><th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 md:px-6 py-4">Vencimiento</th><th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 md:px-6 py-4">Estado</th></tr></thead>
                                 <tbody>
-                                    <tr class="border-b border-gray-50 hover:bg-gray-50"><td class="px-4 md:px-6 py-4 text-sm font-medium text-gray-800">F-001</td><td class="px-4 md:px-6 py-4 text-sm text-[#16A34A] font-medium">Venta (Por cobrar)</td><td class="px-4 md:px-6 py-4 text-sm text-gray-800 font-medium">$5,000</td><td class="px-4 md:px-6 py-4 text-sm text-gray-600">15 días</td><td class="px-4 md:px-6 py-4"><span class="bg-green-100 text-green-700 text-xs px-2.5 py-1 rounded-full font-medium">Por cobrar</span></td></tr>
-                                    <tr class="border-b border-gray-50 hover:bg-gray-50"><td class="px-4 md:px-6 py-4 text-sm font-medium text-gray-800">F-002</td><td class="px-4 md:px-6 py-4 text-sm text-[#16A34A] font-medium">Venta (Por cobrar)</td><td class="px-4 md:px-6 py-4 text-sm text-gray-800 font-medium">$3,000</td><td class="px-4 md:px-6 py-4 text-sm text-gray-600">30 días</td><td class="px-4 md:px-6 py-4"><span class="bg-green-100 text-green-700 text-xs px-2.5 py-1 rounded-full font-medium">Por cobrar</span></td></tr>
-                                    <tr class="border-b border-gray-50 hover:bg-gray-50"><td class="px-4 md:px-6 py-4 text-sm font-medium text-gray-800">C-001</td><td class="px-4 md:px-6 py-4 text-sm text-[#DC2626] font-medium">Compra (Por pagar)</td><td class="px-4 md:px-6 py-4 text-sm text-gray-800 font-medium">$12,000</td><td class="px-4 md:px-6 py-4 text-sm text-gray-600">15 días</td><td class="px-4 md:px-6 py-4"><span class="bg-red-50 text-red-600 text-xs px-2.5 py-1 rounded-full font-medium">Pendiente</span></td></tr>
-                                    <tr class="hover:bg-gray-50"><td class="px-4 md:px-6 py-4 text-sm font-medium text-gray-800">C-002</td><td class="px-4 md:px-6 py-4 text-sm text-[#DC2626] font-medium">Compra (Por pagar)</td><td class="px-4 md:px-6 py-4 text-sm text-gray-800 font-medium">$8,000</td><td class="px-4 md:px-6 py-4 text-sm text-gray-600">30 días</td><td class="px-4 md:px-6 py-4"><span class="bg-red-50 text-red-600 text-xs px-2.5 py-1 rounded-full font-medium">Pendiente</span></td></tr>
+                                    <tr class="border-b border-gray-50 hover:bg-gray-50"><td class="px-4 md:px-6 py-4 text-sm font-medium text-gray-800">F-001</td><td class="px-4 md:px-6 py-4 text-sm text-[#16A34A] font-medium">Venta (Por cobrar)</td><td class="px-4 md:px-6 py-4 text-sm text-gray-800 font-medium">$5,000</td><td class="px-4 md:px-6 py-4 text-sm text-gray-600">15 días</td><td class="px-4 md:px-6 py-4"><span class="bg-green-100 text-green-700 text-xs px-2.5 py-1 rounded-full font-medium whitespace-nowrap">Por cobrar</span></td></tr>
+                                    <tr class="border-b border-gray-50 hover:bg-gray-50"><td class="px-4 md:px-6 py-4 text-sm font-medium text-gray-800">F-002</td><td class="px-4 md:px-6 py-4 text-sm text-[#16A34A] font-medium">Venta (Por cobrar)</td><td class="px-4 md:px-6 py-4 text-sm text-gray-800 font-medium">$3,000</td><td class="px-4 md:px-6 py-4 text-sm text-gray-600">30 días</td><td class="px-4 md:px-6 py-4"><span class="bg-green-100 text-green-700 text-xs px-2.5 py-1 rounded-full font-medium whitespace-nowrap">Por cobrar</span></td></tr>
+                                    <tr class="border-b border-gray-50 hover:bg-gray-50"><td class="px-4 md:px-6 py-4 text-sm font-medium text-gray-800">C-001</td><td class="px-4 md:px-6 py-4 text-sm text-[#DC2626] font-medium">Compra (Por pagar)</td><td class="px-4 md:px-6 py-4 text-sm text-gray-800 font-medium">$12,000</td><td class="px-4 md:px-6 py-4 text-sm text-gray-600">15 días</td><td class="px-4 md:px-6 py-4"><span class="bg-red-50 text-red-600 text-xs px-2.5 py-1 rounded-full font-medium whitespace-nowrap">Pendiente</span></td></tr>
+                                    <tr class="hover:bg-gray-50"><td class="px-4 md:px-6 py-4 text-sm font-medium text-gray-800">C-002</td><td class="px-4 md:px-6 py-4 text-sm text-[#DC2626] font-medium">Compra (Por pagar)</td><td class="px-4 md:px-6 py-4 text-sm text-gray-800 font-medium">$8,000</td><td class="px-4 md:px-6 py-4 text-sm text-gray-600">30 días</td><td class="px-4 md:px-6 py-4"><span class="bg-red-50 text-red-600 text-xs px-2.5 py-1 rounded-full font-medium whitespace-nowrap">Pendiente</span></td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -380,13 +509,13 @@
                         <div class="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-100">
                             <h3 class="text-sm font-semibold text-[#0F172A] mb-5">Cálculo de exposición</h3>
                             <div class="space-y-4">
-                                <div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M17 7 7 17"/></svg></div><span class="text-sm text-gray-700">Cuentas por cobrar</span></div><span class="text-sm font-semibold text-gray-800">$8,000 USD</span></div>
-                                <div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></div><span class="text-sm text-gray-700">Cuentas por pagar</span></div><span class="text-sm font-semibold text-gray-800">$20,000 USD</span></div>
-                                <div class="border-t border-gray-200 pt-4 mt-4"><div class="flex items-center justify-between bg-red-50 rounded-lg p-4"><div class="flex items-center gap-3"><div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path></svg></div><span class="text-sm font-semibold text-gray-800">Exposición neta</span></div><span class="text-xl md:text-2xl font-bold text-[#DC2626]">-$12,000 USD</span></div></div>
+                                <div class="flex items-center justify-between gap-3"><div class="flex items-center gap-3 min-w-0"><div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M17 7 7 17"/></svg></div><span class="text-sm text-gray-700">Cuentas por cobrar</span></div><span class="text-sm font-semibold text-gray-800 flex-shrink-0">$8,000 USD</span></div>
+                                <div class="flex items-center justify-between gap-3"><div class="flex items-center gap-3 min-w-0"><div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></div><span class="text-sm text-gray-700">Cuentas por pagar</span></div><span class="text-sm font-semibold text-gray-800 flex-shrink-0">$20,000 USD</span></div>
+                                <div class="border-t border-gray-200 pt-4 mt-4"><div class="flex items-center justify-between bg-red-50 rounded-lg p-4 gap-3"><div class="flex items-center gap-3 min-w-0"><div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path></svg></div><span class="text-sm font-semibold text-gray-800">Exposición neta</span></div><span class="text-xl md:text-2xl font-bold text-[#DC2626] flex-shrink-0">-$12,000 USD</span></div></div>
                             </div>
                         </div>
                         <div class="bg-[#EFF6FF] rounded-xl p-4 md:p-6 shadow-sm border border-blue-100">
-                            <div class="flex items-center gap-2 mb-4"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg><h3 class="text-sm font-semibold text-[#0F172A]">Interpretación</h3></div>
+                            <div class="flex items-center gap-2 mb-4"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg><h3 class="text-sm font-semibold text-[#0F172A]">Interpretación</h3></div>
                             <p class="text-sm text-gray-700 leading-relaxed">Tienes una posición neta por pagar de 12,000 USD. Si el dólar aumenta, necesitarás más pesos mexicanos para cubrir tus obligaciones.</p>
                         </div>
                     </div>
@@ -404,31 +533,31 @@
                             <div class="space-y-4">
                                 <div>
                                     <label class="text-xs text-gray-500 mb-1 block">Exposición neta (USD)</label>
-                                    <input type="number" id="simExposure" value="12000" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <input type="number" id="simExposure" value="12000" class="w-full border border-gray-200 rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
                                 <div>
                                     <label class="text-xs text-gray-500 mb-1 block">Tipo de cambio base</label>
-                                    <input type="number" step="0.01" id="simBaseRate" value="18.50" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <input type="number" step="0.01" id="simBaseRate" value="18.50" class="w-full border border-gray-200 rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
                                 <div>
                                     <label class="text-xs text-gray-500 mb-1 block">Tipo de cambio simulado</label>
-                                    <input type="number" step="0.01" id="simSimRate" value="19.50" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <input type="number" step="0.01" id="simSimRate" value="19.50" class="w-full border border-gray-200 rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
-                                <button id="calcBtn" class="w-full bg-[#0F172A] text-white py-3 rounded-lg text-sm font-medium hover:bg-[#1e293b] transition">Calcular impacto</button>
+                                <button id="calcBtn" class="w-full bg-[#0F172A] text-white py-3.5 rounded-lg text-base font-medium hover:bg-[#1e293b] transition active:scale-[0.98]">Calcular impacto</button>
                             </div>
                         </div>
                         <div class="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-100">
                             <h3 class="text-sm font-semibold text-[#0F172A] mb-5">Resultados del escenario</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                                <div class="text-center">
+                                <div class="text-center p-3 bg-gray-50 rounded-lg">
                                     <p class="text-xs text-gray-500 mb-1">Costo inicial</p>
                                     <p id="resInitial" class="text-lg font-bold text-gray-800">$222,000 MXN</p>
                                 </div>
-                                <div class="text-center">
+                                <div class="text-center p-3 bg-gray-50 rounded-lg">
                                     <p class="text-xs text-gray-500 mb-1">Costo simulado</p>
                                     <p id="resSimulated" class="text-lg font-bold text-gray-800">$234,000 MXN</p>
                                 </div>
-                                <div class="text-center">
+                                <div class="text-center p-3 bg-gray-50 rounded-lg">
                                     <p class="text-xs text-gray-500 mb-1">Impacto estimado</p>
                                     <p id="resImpact" class="text-lg font-bold px-2 py-1 rounded-lg bg-red-50 text-[#DC2626]">+$12,000 MXN</p>
                                 </div>
@@ -467,19 +596,19 @@
                             <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-4 flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path></svg></div>
                             <h3 class="font-semibold text-[#0F172A] mb-2">Contrato Forward</h3>
                             <p class="text-sm text-gray-500 mb-6 flex-1">Fija hoy un tipo de cambio para una operación futura.</p>
-                            <button class="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition">Cotizar</button>
+                            <button class="w-full bg-blue-600 text-white py-3 rounded-lg text-base font-medium hover:bg-blue-700 transition active:scale-[0.98]">Cotizar</button>
                         </div>
                         <div class="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 flex flex-col">
                             <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mb-4 flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 10 5-5 5 5"></path><path d="M12 15V5"></path><path d="m17 14 5 5-5 5"></path><path d="M22 19H7"></path></svg></div>
                             <h3 class="font-semibold text-[#0F172A] mb-2">Opciones de divisas</h3>
                             <p class="text-sm text-gray-500 mb-6 flex-1">Protege ante movimientos desfavorables del dólar pagando una prima.</p>
-                            <button class="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition">Cotizar</button>
+                            <button class="w-full bg-blue-600 text-white py-3 rounded-lg text-base font-medium hover:bg-blue-700 transition active:scale-[0.98]">Cotizar</button>
                         </div>
                         <div class="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-100 flex flex-col">
                             <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center mb-4 flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9333EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path></svg></div>
                             <h3 class="font-semibold text-[#0F172A] mb-2">Cobertura natural</h3>
                             <p class="text-sm text-gray-500 mb-6 flex-1">Compensa ingresos y egresos en la misma moneda (dólares).</p>
-                            <button class="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition">Analizar</button>
+                            <button class="w-full bg-blue-600 text-white py-3 rounded-lg text-base font-medium hover:bg-blue-700 transition active:scale-[0.98]">Analizar</button>
                         </div>
                     </div>
                 </div>
@@ -487,7 +616,8 @@
                 <!-- Vista 8: Asistente IA -->
                 <div id="view8" class="view">
                     <div class="mb-6"><h1 class="text-xl md:text-2xl font-bold text-[#0F172A]">Asistente IA</h1><p class="text-[#64748B] text-sm mt-1">Tu copiloto financiero para resolver dudas sobre riesgo cambiario.</p></div>
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-[calc(100vh-12rem)] md:h-auto">
+                    <!-- h-[60vh] en móvil evita problemas con la barra de direcciones del navegador -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-[60vh] md:h-[calc(100vh-12rem)]">
                         <div id="chatContainer" class="p-4 md:p-6 space-y-5 overflow-y-auto flex-1">
                             <div class="flex justify-end">
                                 <div class="max-w-[85%] md:max-w-[70%]">
@@ -505,10 +635,10 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="border-t border-gray-100 p-4">
+                        <div class="border-t border-gray-100 p-4 bg-white">
                             <div class="flex gap-3">
-                                <input type="text" id="chatInput" placeholder="Escribe tu pregunta..." class="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <button id="sendBtn" class="bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition flex items-center gap-2 flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"></path><path d="M22 2 11 13"></path></svg> <span class="hidden sm:inline">Enviar</span></button>
+                                <input type="text" id="chatInput" placeholder="Escribe tu pregunta..." class="flex-1 border border-gray-200 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <button id="sendBtn" class="bg-blue-600 text-white px-4 py-3 rounded-lg text-base font-medium hover:bg-blue-700 transition flex items-center gap-2 flex-shrink-0 active:scale-95"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"></path><path d="M22 2 11 13"></path></svg> <span class="hidden sm:inline">Enviar</span></button>
                             </div>
                         </div>
                     </div>
@@ -531,12 +661,10 @@
                 sidebar.classList.remove('-translate-x-full');
                 sidebarOverlay.classList.remove('hidden');
             }
-
             function closeSidebarFn() {
                 sidebar.classList.add('-translate-x-full');
                 sidebarOverlay.classList.add('hidden');
             }
-
             if (menuBtn) menuBtn.addEventListener('click', openSidebar);
             if (closeSidebar) closeSidebar.addEventListener('click', closeSidebarFn);
             if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebarFn);
@@ -552,15 +680,12 @@
                         document.querySelector('main').scrollTop = 0;
                     });
                 }
-            } catch (e) {
-                console.error('Error en login:', e);
-            }
+            } catch (e) { console.error('Error en login:', e); }
 
             // ===== NAVEGACIÓN DEL MENÚ =====
             try {
                 var sidebarItems = document.querySelectorAll('.sidebar-item');
                 var views = document.querySelectorAll('.view');
-
                 sidebarItems.forEach(function(item) {
                     item.addEventListener('click', function() {
                         var targetView = this.getAttribute('data-view');
@@ -569,16 +694,10 @@
                         views.forEach(function(v) { v.classList.remove('active'); });
                         document.getElementById(targetView).classList.add('active');
                         document.querySelector('main').scrollTop = 0;
-                        
-                        // Cerrar sidebar en móvil al hacer clic
-                        if (window.innerWidth < 768) {
-                            closeSidebarFn();
-                        }
+                        if (window.innerWidth < 768) { closeSidebarFn(); }
                     });
                 });
-            } catch (e) {
-                console.error('Error en navegación:', e);
-            }
+            } catch (e) { console.error('Error en navegación:', e); }
 
             // ===== SIMULADOR DE MARGEN EN RIESGO =====
             try {
@@ -589,25 +708,17 @@
                             var exposure = parseFloat(document.getElementById('simExposure').value);
                             var baseRate = parseFloat(document.getElementById('simBaseRate').value);
                             var simRate = parseFloat(document.getElementById('simSimRate').value);
-
-                            if (isNaN(exposure) || isNaN(baseRate) || isNaN(simRate)) {
-                                alert('Por favor ingresa valores válidos');
-                                return;
-                            }
-
+                            if (isNaN(exposure) || isNaN(baseRate) || isNaN(simRate)) { alert('Por favor ingresa valores válidos'); return; }
                             var initialCost = exposure * baseRate;
                             var simulatedCost = exposure * simRate;
                             var impact = simulatedCost - initialCost;
                             var absImpact = Math.abs(impact);
                             var fmt = function(n) { return n.toLocaleString('es-MX', { minimumFractionDigits: 0 }); };
-
                             var resImpact = document.getElementById('resImpact');
                             var resDesc = document.getElementById('resDescription');
                             var resIconWrap = document.getElementById('resIconWrap');
-
                             document.getElementById('resInitial').textContent = '$' + fmt(initialCost) + ' MXN';
                             document.getElementById('resSimulated').textContent = '$' + fmt(simulatedCost) + ' MXN';
-
                             if (impact > 0) {
                                 resImpact.textContent = '+$' + fmt(impact) + ' MXN';
                                 resImpact.className = 'text-lg font-bold px-2 py-1 rounded-lg bg-red-50 text-[#DC2626]';
@@ -624,40 +735,30 @@
                                 resIconWrap.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" x2="19" y1="12" y2="12"></line></svg>';
                                 resDesc.textContent = 'Si el dólar se mantiene en $' + baseRate.toFixed(2) + ', el costo de tu obligación no cambia.';
                             }
-                        } catch (error) {
-                            console.error('Error en cálculo:', error);
-                        }
+                        } catch (error) { console.error('Error en cálculo:', error); }
                     });
                 }
-            } catch (e) {
-                console.error('Error en simulador:', e);
-            }
+            } catch (e) { console.error('Error en simulador:', e); }
 
             // ===== CHAT ASISTENTE IA =====
             try {
                 var sendBtn = document.getElementById('sendBtn');
                 var chatInput = document.getElementById('chatInput');
-
                 if (sendBtn && chatInput) {
                     sendBtn.addEventListener('click', sendMessage);
-                    chatInput.addEventListener('keypress', function(e) {
-                        if (e.key === 'Enter') sendMessage();
-                    });
+                    chatInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') sendMessage(); });
                 }
-
                 function sendMessage() {
                     try {
                         var input = document.getElementById('chatInput');
                         var message = input.value.trim();
                         if (!message) return;
-
                         var container = document.getElementById('chatContainer');
                         var userDiv = document.createElement('div');
                         userDiv.className = 'flex justify-end';
                         userDiv.innerHTML = '<div class="max-w-[85%] md:max-w-[70%]"><div class="chat-bubble-user rounded-2xl rounded-br-sm px-4 py-3 md:px-5 md:py-3"><p class="text-sm text-gray-800">' + message + '</p></div></div>';
                         container.appendChild(userDiv);
                         input.value = '';
-
                         setTimeout(function() {
                             var aiDiv = document.createElement('div');
                             aiDiv.className = 'flex justify-start';
@@ -665,15 +766,10 @@
                             container.appendChild(aiDiv);
                             container.scrollTop = container.scrollHeight;
                         }, 800);
-
                         container.scrollTop = container.scrollHeight;
-                    } catch (error) {
-                        console.error('Error en chat:', error);
-                    }
+                    } catch (error) { console.error('Error en chat:', error); }
                 }
-            } catch (e) {
-                console.error('Error en chat:', e);
-            }
+            } catch (e) { console.error('Error en chat:', e); }
         });
     </script>
 </body>
